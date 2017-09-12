@@ -1,0 +1,16 @@
+.envrc
+*.so
+vendor/
+__*
+*.exe
+*.test
+*.prof
+*.swp
+tmp/
+*.zip
+Vagrantfile
+.vagrant/
+dist/
+vendor/*
+*.out
+pkg/
