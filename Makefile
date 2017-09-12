@@ -1,4 +1,5 @@
 Name := linux-extended
+Repository := zabbix-loadable-modules-$(Name)
 Version := $(shell git describe --tags --abbrev=0)
 OWNER := youyo
 .DEFAULT_GOAL := help
@@ -17,8 +18,8 @@ build: deps
 	docker container run \
 		--rm \
 		--name=$(Name)-build \
-		-v "`pwd`:/go/src/github.com/youyo/zabbix-loadable-modules-$(Name)" \
-		-w '/go/src/github.com/youyo/zabbix-loadable-modules-$(Name)' \
+		-v "`pwd`:/go/src/github.com/$(OWNER)/$(Repository)" \
+		-w '/go/src/github.com/$(OWNER)/$(Repository)' \
 		golang:1.9 \
 		go build -buildmode=c-shared -o $(Name).so -x
 
@@ -28,7 +29,7 @@ test: build
 		--rm \
 		-d \
 		--name=$(Name)-test \
-		-v "`pwd`/linux-extended.so:/var/lib/zabbix/modules/$(Name).so" \
+		-v "`pwd`/$(Name).so:/var/lib/zabbix/modules/$(Name).so" \
 		-e ZBX_LOADMODULE=$(Name).so \
 		-e ZBX_SERVER_HOST=172.17.0.1 \
 		-p 10050:10050 \
@@ -40,7 +41,7 @@ test: build
 release: build
 	mkdir pkg/
 	mv $(Name).so pkg/
-	ghr -t ${GITHUB_TOKEN} -u $(OWNER) -r $(Name) --replace $(Version) pkg/
+	ghr -t ${GITHUB_TOKEN} -u $(OWNER) -r $(Repository) --replace $(Version) pkg/
 
 ## Show help
 help:
