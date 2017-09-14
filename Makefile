@@ -40,8 +40,7 @@ test: build
 
 ## Release
 release: build
-	mkdir pkg/
-	mv $(Name).so pkg/
+	test -e artifacts/ || mkdir artifacts/
 	ghr -t ${GITHUB_TOKEN} -u $(OWNER) -r $(Repository) --replace $(Version) artifacts/
 
 ## Show help
