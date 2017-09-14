@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"errors"
+	"os"
 
 	"github.com/drael/GOnetstat"
 	g2z "gopkg.in/cavaliercoder/g2z.v3"
@@ -9,6 +11,7 @@ import (
 
 func init() {
 	g2z.RegisterUint64Item("linux_extended.netstat.count", "LISTEN,tcp", linuxExtendedNetstatCount)
+	g2z.RegisterDiscoveryItem("linux_extended.swap.discovery", "", linuxExtendedSwapDiscovery)
 }
 
 func linuxExtendedNetstatCount(request *g2z.AgentRequest) (value uint64, err error) {
@@ -70,6 +73,25 @@ func countUp(data []GOnetstat.Process, state string) (value uint64) {
 		if v.State == state {
 			value++
 		}
+	}
+	return
+}
+
+func linuxExtendedSwapDiscovery(request *g2z.AgentRequest) (d g2z.DiscoveryData, err error) {
+	var l []string
+	f, err := os.Open("/proc/swaps")
+	defer f.Close()
+	if err != nil {
+		return
+	}
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		l = append(l, s.Text())
+	}
+	if len(l) >= 2 {
+		d = append(d, g2z.DiscoveryItem{
+			"SWAP": "true",
+		})
 	}
 	return
 }

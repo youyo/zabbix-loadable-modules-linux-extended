@@ -13,4 +13,4 @@ Vagrantfile
 dist/
 vendor/*
 *.out
-pkg/
+artifacts/

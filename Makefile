@@ -21,7 +21,7 @@ build: deps
 		-v "`pwd`:/go/src/github.com/$(OWNER)/$(Repository)" \
 		-w '/go/src/github.com/$(OWNER)/$(Repository)' \
 		golang:1.9 \
-		go build -buildmode=c-shared -o $(Name).so -x
+		go build -buildmode=c-shared -o artifacts/$(Name).so -x
 
 ## Test
 test: build
@@ -29,19 +29,20 @@ test: build
 		--rm \
 		-d \
 		--name=$(Name)-test \
-		-v "`pwd`/$(Name).so:/var/lib/zabbix/modules/$(Name).so" \
+		-v "`pwd`/artifacts/$(Name).so:/var/lib/zabbix/modules/$(Name).so" \
 		-e ZBX_LOADMODULE=$(Name).so \
 		-e ZBX_SERVER_HOST=172.17.0.1 \
 		-p 10050:10050 \
 		zabbix/zabbix-agent:ubuntu-3.0-latest
 	zabbix_get -s 127.0.0.1 -k linux_extended.netstat.count[] && echo success || echo failed
+	zabbix_get -s 127.0.0.1 -k linux_extended.swap.discovery[] && echo success || echo failed
 	docker container rm -f $(Name)-test
 
 ## Release
 release: build
 	mkdir pkg/
 	mv $(Name).so pkg/
-	ghr -t ${GITHUB_TOKEN} -u $(OWNER) -r $(Repository) --replace $(Version) pkg/
+	ghr -t ${GITHUB_TOKEN} -u $(OWNER) -r $(Repository) --replace $(Version) artifacts/
 
 ## Show help
 help:
